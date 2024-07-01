@@ -8,6 +8,7 @@ spring:
       - flyway
       - docs
       - api
+      - jwt
   servlet:
     multipart:
       max-file-size: 5MB # 사진 한장당 최대 1MB * 3장 = 3MB + 넉넉하게 2MB 버퍼 = 5MB

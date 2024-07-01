@@ -8,13 +8,11 @@ import kr.weit.roadyfoody.common.exception.ErrorResponse
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.stereotype.Component
-import java.io.IOException
 
 @Component
 class CustomAuthenticationEntryPoint(
     private val objectMapper: ObjectMapper,
 ) : AuthenticationEntryPoint {
-    @Throws(IOException::class)
     override fun commence(
         request: HttpServletRequest?,
         response: HttpServletResponse,
@@ -24,7 +22,7 @@ class CustomAuthenticationEntryPoint(
         response.status = HttpServletResponse.SC_UNAUTHORIZED
         objectMapper.writeValue(
             response?.outputStream,
-            ErrorResponse.of(ErrorCode.UNAUTHORIZED, ErrorCode.UNAUTHORIZED.errorMessage),
+            ErrorResponse.of(ErrorCode.UNAUTHORIZED, "인증정보가 없습니다."),
         )
     }
 }

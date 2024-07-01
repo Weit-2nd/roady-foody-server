@@ -61,6 +61,25 @@ class UserRepositoryTest(
             }
         }
 
+        describe("getBySocialId 메소드는") {
+            context("존재하는 socialId 를 받는 경우") {
+                it("일치하는 유저를 반환한다.") {
+                    val user = userRepository.getBySocialId(givenUser.socialId)
+                    user shouldBe givenUser
+                }
+            }
+
+            context("존재하지 않는 socialId 를 받는 경우") {
+                it("UserNotFoundException 을 던진다.") {
+                    val ex =
+                        shouldThrow<UserNotFoundException> {
+                            userRepository.getBySocialId(TEST_NONEXISTENT_NICKNAME)
+                        }
+                    ex.message shouldBe "$TEST_NONEXISTENT_NICKNAME 소셜 ID 의 사용자는 존재하지 않습니다."
+                }
+            }
+        }
+
         describe("existsByProfileNickname 메소드는") {
             context("존재하는 nickname 을 받는 경우") {
                 it("true 를 반환한다.") {

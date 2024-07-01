@@ -57,9 +57,14 @@ dependencies {
     implementation("io.awspring.cloud:spring-cloud-aws-starter-parameter-store:3.1.1")
     implementation("org.springframework.cloud:spring-cloud-starter-bootstrap:4.1.2")
 
-    // utils
+    // Utils
     implementation("org.apache.tika:tika-core:2.9.1")
     implementation("com.sksamuel.scrimage:scrimage-webp:4.1.3")
+
+    // JWT
+    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+    implementation("io.jsonwebtoken:jjwt-impl:0.12.6")
+    implementation("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
     // Test
     testImplementation(platform("org.junit:junit-bom:5.10.2"))

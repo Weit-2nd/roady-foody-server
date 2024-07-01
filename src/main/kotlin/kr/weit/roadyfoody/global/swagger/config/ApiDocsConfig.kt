@@ -48,20 +48,10 @@ class ApiDocsConfig {
                     .`in`(SecurityScheme.In.HEADER)
                     .name(AUTHORIZATION),
             )
-            // TODO 회원가입 기능 개발 후 수정 혹은 삭제 고려
-            .addSecuritySchemes(
-                "userIdHeader",
-                SecurityScheme()
-                    .type(SecurityScheme.Type.APIKEY)
-                    .`in`(SecurityScheme.In.HEADER)
-                    .name("userId"),
-            )
     }
 
     private fun createSecurityRequirement(): SecurityRequirement {
         return SecurityRequirement()
             .addList(AUTHORIZATION)
-            // TODO 회원가입 기능 개발 후 수정 혹은 삭제 고려
-            .addList("userIdHeader")
     }
 }

@@ -9,11 +9,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import kr.weit.roadyfoody.auth.application.dto.DuplicatedNicknameResponse
+import kr.weit.roadyfoody.auth.application.dto.ServiceTokensResponse
 import kr.weit.roadyfoody.auth.application.dto.SignUpRequest
 import kr.weit.roadyfoody.common.exception.ErrorResponse
 import kr.weit.roadyfoody.global.swagger.v1.SwaggerTag
 import kr.weit.roadyfoody.global.validator.MaxFileSize
 import kr.weit.roadyfoody.global.validator.WebPImage
+import kr.weit.roadyfoody.user.domain.User
 import kr.weit.roadyfoody.user.utils.NICKNAME_REGEX_DESC
 import kr.weit.roadyfoody.useragreedterm.exception.ERROR_MSG_PREFIX
 import kr.weit.roadyfoody.useragreedterm.exception.ERROR_MSG_SUFFIX
@@ -93,7 +95,7 @@ interface AuthControllerSpec {
                 ],
             ), ApiResponse(
                 responseCode = "401",
-                description = "유효하지 않는 토큰으로 요청",
+                description = "유효하지 않은 토큰으로 요청",
                 content = [
                     Content(
                         mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -178,4 +180,199 @@ interface AuthControllerSpec {
         ],
     )
     fun checkDuplicatedNickname(nickname: String): DuplicatedNicknameResponse
+
+    @Operation(
+        summary = "로그인 API",
+        description = "Authorization 헤더에 socialAccessToken(Bearer)을 넣어 로그인을 진행합니다.",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "로그인 성공",
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "로그인 실패",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Missing Social Access Token",
+                                summary = "SocialAccessToken 미입력",
+                                value = """
+                        {
+                            "code": -10000,
+                            "errorMessage": "socialAccessToken 이 존재하지 않습니다."
+                        }
+                        """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "유효하지 않은 토큰으로 요청",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Invalid Social Access Token",
+                                summary = "유효하지 않는 SocialAccessToken",
+                                value = """
+                        {
+                            "code": -10001,
+                            "errorMessage": "유효하지 않은 토큰입니다."
+                        }
+                        """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "유저 정보 없음",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Not Registered User",
+                                summary = "미가입 유저",
+                                value = """
+                        {
+                            "code": -10009,
+                            "errorMessage": "회원가입을 하지 않은 사용자입니다."
+                        }
+                        """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun signIn(
+        @Parameter(hidden = true)
+        socialAccessToken: String?,
+    ): ServiceTokensResponse
+
+    @Operation(
+        summary = "서비스 AccessToken 갱신 API",
+        description = "Refresh Token 을 통해 AccessToken 을 갱신합니다.",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "요청 성공",
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "요청 실패",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Missing Refresh Token",
+                                summary = "RefreshToken 미입력",
+                                value = """
+                        {
+                            "code": -10000,
+                            "errorMessage": "RefreshToken 이 존재하지 않습니다."
+                        }
+                        """,
+                            ),
+                            ExampleObject(
+                                name = "Invalid Token Format",
+                                summary = "RefreshToken 형식 오류",
+                                value = """
+                        {
+                            "code": -10000,
+                            "errorMessage": "RefreshToken 의 형식이 올바르지 않습니다."
+                        }
+                        """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "유효하지 않은 토큰으로 요청",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Invalid Token",
+                                summary = "유효하지 않은 토큰",
+                                value = """
+                        {
+                            "code": -10001,
+                            "errorMessage": "유효하지 않은 토큰입니다."
+                        }
+                        """,
+                            ),
+                            ExampleObject(
+                                name = "Invalid Token",
+                                summary = "유효하지 않은 토큰",
+                                value = """
+                        {
+                            "code": -10001,
+                            "errorMessage": "인증된 사용자를 찾을 수 없습니다."
+                        }
+                        """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun refresh(
+        @Parameter(hidden = true)
+        refreshToken: String?,
+    ): ServiceTokensResponse
+
+    @Operation(
+        summary = "로그아웃 API",
+        description = "Authorization 헤더에 AccessToken(Bearer)을 넣어 로그아웃을 진행합니다.",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "로그아웃 성공",
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "유효하지 않은 토큰으로 요청",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                value = """
+                        {
+                            "code": -10001,
+                            "errorMessage": "인증정보가 없습니다."
+                        }
+                        """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun signOut(
+        @Parameter(hidden = true)
+        user: User,
+    )
 }
