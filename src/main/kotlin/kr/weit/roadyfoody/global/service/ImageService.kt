@@ -16,6 +16,8 @@ class ImageService(
         storageService.upload(name, file.inputStream)
     }
 
+    fun downloadUrl(name: String): String = storageService.downloadUrl(name)
+
     fun generateImageName(file: MultipartFile): String {
         val extension = MimeUtils.getFileExtension(file)
         return "${UUID.randomUUID()}$extension"

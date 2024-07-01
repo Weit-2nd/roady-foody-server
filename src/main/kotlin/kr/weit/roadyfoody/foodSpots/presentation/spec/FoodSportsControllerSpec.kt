@@ -8,28 +8,25 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.Size
+import kr.weit.roadyfoody.common.dto.SliceResponse
 import kr.weit.roadyfoody.common.exception.ErrorResponse
+import kr.weit.roadyfoody.foodSpots.dto.ReportHistoriesResponse
 import kr.weit.roadyfoody.foodSpots.dto.ReportRequest
+import kr.weit.roadyfoody.foodSpots.utils.SliceReportHistories
 import kr.weit.roadyfoody.foodSpots.validator.WebPImageList
 import kr.weit.roadyfoody.global.swagger.v1.SwaggerTag
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
 
 @Tag(name = SwaggerTag.FOOD_SPOTS)
 interface FoodSportsControllerSpec {
     @Operation(
         description = "음식점 정보 리포트 API",
-        parameters = [
-            Parameter(name = "reportRequest", description = "음식점 정보", required = true),
-            Parameter(
-                name = "reportPhotos",
-                description = "음식점 사진",
-                required = false,
-                content = [Content(mediaType = "image/webp")],
-            ),
-        ],
         responses = [
             ApiResponse(
                 responseCode = "201",
@@ -55,7 +52,7 @@ interface FoodSportsControllerSpec {
                             ),
                             ExampleObject(
                                 name = "Invalid FoodSpot Name",
-                                summary = "상호명에 특수문자가 포함된 경우",
+                                summary = "상호명에 허용되지 않은 특수문자가 포함된 경우",
                                 value = """
                                 {
                                     "code": -10000,
@@ -153,9 +150,77 @@ interface FoodSportsControllerSpec {
         @RequestHeader
         userId: Long,
         @Valid
+        @RequestPart
         reportRequest: ReportRequest,
         @Size(max = 3, message = "이미지는 최대 3개까지 업로드할 수 있습니다.")
         @WebPImageList
+        @RequestPart(required = false)
         reportPhotos: List<MultipartFile>?,
     )
+
+    @Operation(
+        description = "음식점 정보 리스트 조회 API",
+        parameters = [
+            Parameter(name = "size", description = "조회할 개수", required = false, example = "10"),
+            Parameter(name = "lastId", description = "마지막으로 조회된 ID", required = false, example = "1"),
+        ],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "리포트 리스트 조회 성공",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema =
+                            Schema(
+                                implementation = SliceReportHistories::class,
+                            ),
+                    ),
+                ],
+            ),
+
+            ApiResponse(
+                responseCode = "400",
+                description = "리포트 리스트 조회 실패",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Invalid Size",
+                                summary = "양수가 아닌 사이즈 입력",
+                                value = """
+                        {
+                            "code": -10000,
+                            "errorMessage": "조회할 개수는 양수여야 합니다."
+                        }
+                        """,
+                            ),
+                            ExampleObject(
+                                name = "Invalid Last ID",
+                                summary = "양수가 아닌 마지막 ID 입력",
+                                value = """
+                        {
+                            "code": -10000,
+                            "errorMessage": "마지막 ID는 양수여야 합니다."
+                        }
+                        """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun getReportHistories(
+        @RequestHeader
+        userId: Long,
+        @Positive(message = "조회할 개수는 양수여야 합니다.")
+        @RequestParam(defaultValue = "10", required = false)
+        size: Int,
+        @Positive(message = "마지막 ID는 양수여야 합니다.")
+        @RequestParam(required = false)
+        lastId: Long?,
+    ): SliceResponse<ReportHistoriesResponse>
 }
