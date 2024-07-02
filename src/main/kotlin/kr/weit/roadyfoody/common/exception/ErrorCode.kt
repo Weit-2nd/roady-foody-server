@@ -14,8 +14,9 @@ enum class ErrorCode(val httpStatus: HttpStatus, val code: Int, val errorMessage
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, -10009, "Not found user"),
     NOT_FOUND_TERM(HttpStatus.NOT_FOUND, -10010, "Not found term"),
 
-    // external API error 11000대
-
+    // Search API error 11000대
     REST_CLIENT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, -11000, "외부 API 호출 중 에러 발생"),
     RETRIES_EXCEEDED_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, -11001, "외부 API 호출 재시도 횟수 초과"),
+    SEARCH_KEYWORD_LENGTH_SHORT(HttpStatus.BAD_REQUEST, -11002, "검색 키워드 길이는 2자 이상입니다."),
+    SEARCH_KEYWORD_LENGTH_LONG(HttpStatus.BAD_REQUEST, -11003, "검색 키워드 길이는 60자 이하입니다."),
 }

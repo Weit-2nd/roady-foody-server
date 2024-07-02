@@ -3,11 +3,11 @@ package kr.weit.roadyfoody.search.tourism.presentation.spec
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
-import kr.weit.roadyfoody.common.exception.ErrorResponse
+import kr.weit.roadyfoody.common.exception.ErrorCode
+import kr.weit.roadyfoody.global.swagger.ApiErrorCodeExample
 import kr.weit.roadyfoody.global.swagger.v1.SwaggerTag
 import kr.weit.roadyfoody.search.tourism.dto.SearchResponses
 
@@ -29,28 +29,9 @@ interface TourismControllerSpec {
                     ),
                 ],
             ),
-            ApiResponse(
-                responseCode = "500",
-                description = "외부 API 호출 문제",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = ErrorResponse::class),
-                        examples = [
-                            ExampleObject(
-                                value = """
-                        {
-                            "code": -11000,
-                            "errorMessage": "외부 API 호출 중 에러 발생"
-                        }
-                        """,
-                            ),
-                        ],
-                    ),
-                ],
-            ),
         ],
     )
+    @ApiErrorCodeExample(ErrorCode.REST_CLIENT_ERROR)
     fun searchTourismKeyword(
         numOfRows: Int,
         keyword: String,
